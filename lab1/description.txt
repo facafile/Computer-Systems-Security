@@ -1,0 +1,19 @@
+Implementirao sam password manager tako da postoje dvije akcije koje se mogu u njemu raditi.
+
+Akcija "put MASTERPASS DOMENA PASS" postavlja u json file sa passwordima ovaj novi par ako je zadovoljen MASTERPASS. 
+Ako je to bio prvi unos onda se ujedno i ovom naredbom inicijalizirao MASTERPASS.
+
+Akcija "put MASTERPASS DOMENA" vraca password za DOMENU ako je MASTERPASS ispravno unesen i ta domena stvarno postoji.
+
+Moje rijesenje obuhvaca sve sigurnosne zahtjeve navedene u uputama za laboratorijsku vjezbu.
+
+Povjerljivost zaporki: Osiguranje da napadac ne moze saznati duljinu lozinki ni jesu li dvije lozinke u datoteci iste sam postigao
+na nacin da nisam svaki par domene lozinke enkriptirao posebno pa dodavao u file nego sam cijeli set lozinki spajao u jedan string i onda ga enkriptirao.
+Napadac ne moze ni saznati jesu li promjenjene lozinke iste kao i prije jer pri svakom pristupu bazi ona se enkriptira sa drugim saltom i inicijalizacijskim vektorom uz MASTERKEY
+
+Povjerljivost adresa sam postigao na isti nacin. Spajao sam u string parove ADRESA PASSWORD i enkripitrao cijeli file odjednom sto ih cini sigurnima
+
+Integritet adresa i lozinki: to sam ostvario algoritmom kojim sam kriptirao datoteku (AES sa GCM modom). GCM mod pri generiranju enkriptiranog teksta generira i tag koji se pri dekriptiranju opet stvara i usporeduju se pocetni i sadasnji. Ako postoji razlika u njima to znaci da je neko dirao string sa lozinkama u datoteci, tada smatramo file koruptiranim i ne dekripitramo ga. 
+
+
+Deriviranje kljuca iz MASTERPASSa: za stvaranje kljuca kojim enkriptiram podatke sam koristio MASTERPASS i salt koji sam slucajno izgenerirao svaki put kada se dogada upit na bazu. time sam osigurao da se kljuc stalno mijenja i time otezava dekripciju napadacima. Kao algoritam za derivaciju kljuca sam koristio PBKDF2 u paru sa SHA256 hash algoritmom. Takoder sam postavio broj iteracija funckije derivacije kljuca na 1000000 kako bi dodalo jos jedan level sigurnosti pri generaciji kljuca.

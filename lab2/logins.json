@@ -1,0 +1,10 @@
+{
+    "users": [
+        {
+            "username": "filipsa",
+            "password": "4d2044a7e330b5690c4062bb2032d4be956894204331aa19ea8673c099e15c54",
+            "salt": "21a5907d43df4425b5a4c8cfda5391ed",
+            "flag": "1"
+        }
+    ]
+}
