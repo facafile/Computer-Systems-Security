@@ -5,16 +5,27 @@ import json
 import hashlib
 import uuid
 
+
 def checkPassFromat(password):
     if (len(password) < 8 or not any(char.isdigit() for char in password) or
-        not any(char.isalpha() for char in password)):
-        print("Password must be longer than 8 charactes and must contain letters and numbers")
+            not any(char.isalpha() for char in password) or not any(char.isupper() for char in password) or
+            not any(char.islower() for char in password)):
+        print("Password must be longer than 8 charactes and must contain small and big letters and numbers")
         return False
 
     return True
 
-def hash(password,salt):
+
+def checkSame(user, password):
+    if hash(password.encode(), user['salt'].encode()) == user['password']:
+        print("New password can not be the same as the current one!")
+        return False
+    return True
+
+
+def hash(password, salt):
     return hashlib.sha256(salt + password).hexdigest()
+
 
 def writeData(new_data, type):
     if type == "add" or type == "passwd":
@@ -42,7 +53,6 @@ def writeData(new_data, type):
 
             file_data['users'].append(new_data)
 
-
     with open("logins.json", "w") as jsonFile:
         if type == "passwd":
             for obj in file_data['users']:
@@ -63,11 +73,11 @@ def writeData(new_data, type):
                     print("User successfuly removed.")
                     break
 
-
         json.dump(file_data, jsonFile, indent=4)
 
         if type == "add":
             print(f"user {new_data['username']} sucsessfully added")
+
 
 def findRecord(username):
     if not os.path.exists("logins.json"):
@@ -81,9 +91,10 @@ def findRecord(username):
 
         for obj in file_data['users']:
             if obj['username'] == username:
-                return {"username":username, "password":obj['password'], "salt":obj['salt'], "flag":obj['flag']}
+                return {"username": username, "password": obj['password'], "salt": obj['salt'], "flag": obj['flag']}
 
-        return {"username":username, "password":"", "salt":"", "flag":"0"}
+        return {"username": username, "password": "", "salt": "", "flag": "0"}
+
 
 def changeUserPass(user):
     pswd = getpass.getpass("New Password: ")
@@ -91,11 +102,13 @@ def changeUserPass(user):
 
     if pswd != pswd2:
         print("error! Password missmatch!")
-        return
+        return False
 
     if not checkPassFromat(pswd):
-        print("password must be at least 8 characters long and must contain both letters and numbers")
-        return
+        return False
+
+    if not checkSame(user, pswd):
+        return False
 
     with open("logins.json", "r") as File:
         file_data = json.load(File)
@@ -109,6 +122,8 @@ def changeUserPass(user):
                 obj['flag'] = "0"
                 json.dump(file_data, jsonFile, indent=4)
                 print("Login Successfull!")
+                return True
+    return False
 
 
 def login(user):
@@ -117,7 +132,7 @@ def login(user):
         if hash(pswd.encode(), user['salt'].encode()) == user['password']:
             if user['flag'] == "1":
                 newpass = changeUserPass(user)
-                return True
+                return newpass
             else:
                 print("Login Successfull!")
                 return True
