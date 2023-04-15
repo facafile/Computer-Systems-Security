@@ -12,8 +12,11 @@ def checkPassFromat(password):
             not any(char.islower() for char in password)):
         print("Password must be longer than 8 charactes and must contain small and big letters and numbers")
         return False
+    if any(not char.isalnum() for char in password):
+        return True
 
-    return True
+    print("Password must contain special characters")
+    return False
 
 
 def checkSame(user, password):
